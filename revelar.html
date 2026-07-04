@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Revelar — entrega de fotos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,600;1,9..144,500&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink: #131214;
+    --ink-2: #1c1b1e;
+    --paper: #f2ece0;
+    --paper-dim: #c9c2b2;
+    --brass: #c89b3c;
+    --brass-dim: #8a6d2c;
+    --safelight: #c1443a;
+    --sage: #7c8b6f;
+    --line: rgba(242,236,224,0.14);
+    --line-strong: rgba(242,236,224,0.28);
+    --shadow: 0 20px 60px rgba(0,0,0,0.45);
+    --radius: 3px;
+  }
+  *{ box-sizing: border-box; }
+  html,body{ margin:0; padding:0; }
+  body{
+    background: var(--ink);
+    color: var(--paper);
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+  ::selection{ background: var(--brass); color: var(--ink); }
+  :focus-visible{ outline: 2px solid var(--brass); outline-offset: 3px; }
+  @media (prefers-reduced-motion: reduce){
+    *{ animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
+  }
+
+  .app{ max-width: 1180px; margin: 0 auto; padding: 0 28px 80px; }
+
+  /* ---------- Top bar ---------- */
+  .topbar{
+    display:flex; align-items:center; justify-content:space-between;
+    padding: 28px 0 22px;
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 40px;
+    flex-wrap: wrap; gap: 16px;
+  }
+  .brand{ display:flex; align-items:baseline; gap:10px; }
+  .brand-mark{
+    font-family:'Fraunces', serif; font-weight:600; font-style:italic;
+    font-size: 26px; letter-spacing: -0.01em; color: var(--paper);
+  }
+  .brand-tag{
+    font-family:'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--brass); opacity:0.9;
+  }
+  .switch{
+    display:flex; background: var(--ink-2); border:1px solid var(--line); border-radius: 999px; padding:3px;
+  }
+  .switch button{
+    font-family:'Inter'; font-size: 13px; font-weight:500; color: var(--paper-dim);
+    background: transparent; border:none; padding: 9px 20px; border-radius: 999px; cursor:pointer;
+    transition: background 0.25s ease, color 0.25s ease;
+  }
+  .switch button.active{ background: var(--brass); color: var(--ink); }
+  .switch button:not(.active):hover{ color: var(--paper); }
+
+  h1,h2,h3{ font-family:'Fraunces', serif; font-weight:500; margin:0; }
+  p{ margin:0; }
+  .eyebrow{
+    font-family:'IBM Plex Mono', monospace; font-size: 11px; letter-spacing:0.14em;
+    text-transform: uppercase; color: var(--brass); margin-bottom: 10px; display:block;
+  }
+
+  /* ============ ESTÚDIO ============ */
+  .studio-hero{ display:flex; justify-content:space-between; align-items:flex-end; gap:24px; margin-bottom: 36px; flex-wrap:wrap;}
+  .studio-hero h1{ font-size: 36px; max-width: 520px; line-height:1.15; }
+  .studio-hero .sub{ color: var(--paper-dim); font-size:14px; max-width:420px; margin-top:10px; line-height:1.5;}
+  .btn{
+    font-family:'Inter'; font-weight:600; font-size: 13.5px; border-radius: var(--radius);
+    padding: 13px 22px; cursor:pointer; border:1px solid transparent; transition: all 0.2s ease;
+    display:inline-flex; align-items:center; gap:8px; white-space:nowrap;
+  }
+  .btn-primary{ background: var(--brass); color: var(--ink); }
+  .btn-primary:hover{ background:#dbae4c; transform: translateY(-1px);}
+  .btn-ghost{ background: transparent; color: var(--paper); border-color: var(--line-strong); }
+  .btn-ghost:hover{ border-color: var(--brass); color: var(--brass); }
+  .btn-sm{ padding: 8px 14px; font-size:12px; }
+
+  .panel{
+    background: var(--ink-2); border:1px solid var(--line); border-radius: 6px; padding: 28px;
+  }
+  .form-grid{ display:grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 22px; }
+  .field{ display:flex; flex-direction:column; gap:7px; }
+  .field.full{ grid-column: 1 / -1; }
+  label{ font-size: 12px; color: var(--paper-dim); font-weight:500; }
+  input[type=text], input[type=date]{
+    background: var(--ink); border:1px solid var(--line-strong); color: var(--paper);
+    padding: 11px 13px; border-radius: var(--radius); font-family:'Inter'; font-size:14px;
+  }
+  input::placeholder{ color: #6b6862; }
+  input:focus{ border-color: var(--brass); }
+
+  .dropzone{
+    border: 1.5px dashed var(--line-strong); border-radius: 6px; padding: 26px;
+    display:flex; align-items:center; justify-content:space-between; gap: 16px; flex-wrap:wrap;
+    background: repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255,255,255,0.015) 10px, rgba(255,255,255,0.015) 20px);
+  }
+  .dropzone-text{ font-size: 13.5px; color: var(--paper-dim); }
+  .dropzone-text strong{ color: var(--paper); display:block; font-size:15px; margin-bottom:3px; font-weight:600;}
+
+  .thumb-row{ display:flex; gap:8px; margin-top:16px; flex-wrap:wrap; }
+  .thumb-row .mini{
+    width: 64px; height: 64px; border-radius: 3px; object-fit:cover; border:1px solid var(--line-strong);
+  }
+  .mini-empty{
+    width:64px;height:64px;border:1px dashed var(--line-strong); border-radius:3px;
+    display:flex;align-items:center;justify-content:center;color:var(--paper-dim);font-size:18px;
+  }
+
+  .section-title{ display:flex; align-items:baseline; justify-content:space-between; margin: 48px 0 18px; }
+  .section-title h2{ font-size: 22px; }
+  .count-tag{ font-family:'IBM Plex Mono'; font-size:12px; color: var(--paper-dim); }
+
+  .gallery-list{ display:flex; flex-direction:column; gap: 1px; background: var(--line); border-radius:6px; overflow:hidden; }
+  .gallery-row{
+    background: var(--ink-2); padding: 18px 22px; display:flex; align-items:center; gap:18px;
+    justify-content:space-between; flex-wrap:wrap;
+  }
+  .gallery-info{ display:flex; align-items:center; gap:16px; }
+  .gallery-cover{ width:52px; height:52px; border-radius:3px; object-fit:cover; flex-shrink:0; }
+  .gallery-meta strong{ font-family:'Fraunces'; font-weight:500; font-size:16px; display:block; }
+  .gallery-meta span{ font-size:12.5px; color: var(--paper-dim); font-family:'IBM Plex Mono'; }
+  .status-pill{
+    font-family:'IBM Plex Mono'; font-size: 10.5px; letter-spacing:0.08em; text-transform:uppercase;
+    padding: 5px 10px; border-radius: 999px; border:1px solid;
+  }
+  .status-rascunho{ color: var(--paper-dim); border-color: var(--line-strong); }
+  .status-enviada{ color: var(--brass); border-color: var(--brass-dim); }
+  .status-visualizada{ color: var(--sage); border-color: var(--sage); }
+  .row-actions{ display:flex; gap:8px; align-items:center; }
+
+  .toast{
+    position: fixed; bottom: 28px; left:50%; transform: translateX(-50%) translateY(20px);
+    background: var(--paper); color: var(--ink); padding: 13px 22px; border-radius: 6px;
+    font-size: 13.5px; font-weight:500; box-shadow: var(--shadow); opacity:0; pointer-events:none;
+    transition: all 0.35s cubic-bezier(.2,.8,.2,1); z-index: 999; display:flex; align-items:center; gap:10px;
+  }
+  .toast.show{ opacity:1; transform: translateX(-50%) translateY(0); }
+  .toast .dot{ width:7px; height:7px; border-radius:50%; background: var(--sage); }
+
+  /* ============ CLIENTE ============ */
+  .client-wrap{ background: var(--paper); color: var(--ink); margin: 0 -28px; padding: 0 28px; border-radius: 10px 10px 0 0; }
+  .client-hero{
+    padding: 56px 0 34px; border-bottom: 1px solid rgba(19,18,20,0.12); position:relative;
+  }
+  .client-hero .eyebrow{ color: var(--safelight); }
+  .client-hero h1{ font-size: 44px; line-height:1.1; color: var(--ink); max-width:640px; }
+  .client-hero .meta-line{
+    margin-top:16px; display:flex; gap:22px; flex-wrap:wrap; font-family:'IBM Plex Mono'; font-size:12.5px; color:#5b5850;
+  }
+  .client-hero .meta-line b{ color: var(--ink); }
+
+  .sheet-bar{
+    position: sticky; top:0; z-index: 20; background: var(--paper);
+    display:flex; align-items:center; justify-content:space-between; padding: 16px 0;
+    border-bottom: 1px solid rgba(19,18,20,0.12); flex-wrap:wrap; gap:12px;
+  }
+  .sheet-bar .left{ display:flex; align-items:center; gap:14px; font-size:13.5px; color:#5b5850;}
+  .heart-count{ display:inline-flex; align-items:center; gap:6px; font-weight:600; color: var(--ink); }
+  .btn-dark{ background: var(--ink); color: var(--paper); }
+  .btn-dark:hover{ background:#000; }
+  .btn-dark:disabled{ opacity:0.35; cursor:not-allowed; transform:none; }
+
+  .perf-strip{
+    height: 14px; background-image: radial-gradient(circle, rgba(19,18,20,0.22) 2.6px, transparent 2.7px);
+    background-size: 22px 14px; background-position: 8px center; margin: 26px 0 6px;
+  }
+  .contact-grid{
+    display:grid; grid-template-columns: repeat(auto-fill, minmax(210px,1fr)); gap: 3px;
+    background: rgba(19,18,20,0.08); padding:3px; border-radius: 4px;
+  }
+  .frame{
+    position:relative; background: var(--paper); cursor: pointer; overflow:hidden;
+  }
+  .frame img{
+    width:100%; aspect-ratio: 3/2; object-fit:cover; display:block; filter: saturate(0.97);
+    transition: transform 0.5s cubic-bezier(.2,.8,.2,1);
+  }
+  .frame:hover img{ transform: scale(1.045); }
+  .frame-label{
+    position:absolute; top:8px; left:8px; font-family:'IBM Plex Mono'; font-size:10.5px;
+    background: rgba(19,18,20,0.78); color: var(--paper); padding: 3px 7px; border-radius: 2px; letter-spacing:0.03em;
+  }
+  .frame-heart{
+    position:absolute; top:8px; right:8px; width: 30px; height:30px; border-radius:50%;
+    background: rgba(19,18,20,0.55); border:none; display:flex; align-items:center; justify-content:center;
+    cursor:pointer; transition: all 0.2s ease;
+  }
+  .frame-heart svg{ width:15px; height:15px; stroke: var(--paper); fill:none; stroke-width:2; transition: all 0.2s ease; }
+  .frame-heart.active{ background: var(--safelight); }
+  .frame-heart.active svg{ fill: var(--paper); stroke: var(--paper); }
+  .frame-heart:hover{ transform: scale(1.08); }
+
+  .contact-footer{ padding: 46px 0 60px; text-align:center; color:#847f73; font-size:12.5px; font-family:'IBM Plex Mono'; }
+
+  /* Lightbox */
+  .lightbox{
+    position: fixed; inset:0; background: rgba(10,9,10,0.94); z-index: 100;
+    display:flex; align-items:center; justify-content:center; opacity:0; pointer-events:none;
+    transition: opacity 0.3s ease;
+  }
+  .lightbox.open{ opacity:1; pointer-events:auto; }
+  .lightbox-inner{ max-width: 84vw; max-height: 82vh; display:flex; flex-direction:column; align-items:center; gap:16px; }
+  .lightbox img{ max-width: 84vw; max-height: 68vh; object-fit:contain; border-radius:2px; box-shadow: var(--shadow); }
+  .lightbox-bar{ display:flex; align-items:center; gap:18px; color: var(--paper); font-family:'IBM Plex Mono'; font-size:12.5px; }
+  .lightbox-close, .lightbox-nav{
+    position:fixed; background: rgba(242,236,224,0.1); border:1px solid var(--line-strong); color:var(--paper);
+    width:42px; height:42px; border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer;
+  }
+  .lightbox-close{ top: 26px; right: 28px; }
+  .lightbox-nav.prev{ left: 28px; top:50%; transform:translateY(-50%);}
+  .lightbox-nav.next{ right: 28px; top:50%; transform:translateY(-50%);}
+  .lightbox-close:hover, .lightbox-nav:hover{ border-color: var(--brass); }
+
+  @media (max-width: 720px){
+    .app{ padding: 0 16px 60px; }
+    .form-grid{ grid-template-columns: 1fr; }
+    .client-hero h1{ font-size: 30px; }
+    .contact-grid{ grid-template-columns: repeat(auto-fill, minmax(140px,1fr)); }
+    .lightbox-nav{ width:36px; height:36px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <div class="topbar">
+    <div class="brand">
+      <span class="brand-mark">Revelar</span>
+      <span class="brand-tag">Entrega de fotos</span>
+    </div>
+    <div class="switch" role="tablist" aria-label="Alternar visão">
+      <button id="tab-studio" class="active" onclick="setView('studio')">Estúdio</button>
+      <button id="tab-client" onclick="setView('client')">Cliente</button>
+    </div>
+  </div>
+
+  <!-- ================= STUDIO VIEW ================= -->
+  <div id="view-studio">
+    <div class="studio-hero">
+      <div>
+        <span class="eyebrow">Painel do fotógrafo</span>
+        <h1>Cada ensaio, entregue como uma revelação.</h1>
+        <p class="sub">Monte a galeria, envie o link e acompanhe quando o cliente abrir e escolher as fotos favoritas.</p>
+      </div>
+    </div>
+
+    <div class="panel">
+      <span class="eyebrow">Nova galeria</span>
+      <div class="form-grid">
+        <div class="field">
+          <label for="in-client">Nome do cliente</label>
+          <input type="text" id="in-client" placeholder="Ex: Marina &amp; Thiago">
+        </div>
+        <div class="field">
+          <label for="in-event">Ensaio / evento</label>
+          <input type="text" id="in-event" placeholder="Ex: Casamento — Sítio das Palmeiras">
+        </div>
+        <div class="field">
+          <label for="in-date">Data da entrega</label>
+          <input type="date" id="in-date">
+        </div>
+        <div class="field">
+          <label for="in-total">Nº de fotos</label>
+          <input type="text" id="in-total" placeholder="Ex: 24" inputmode="numeric">
+        </div>
+      </div>
+
+      <div class="dropzone">
+        <div class="dropzone-text">
+          <strong>Arraste as fotos aqui</strong>
+          Para este protótipo, use o conjunto de exemplo abaixo.
+        </div>
+        <button class="btn btn-ghost" onclick="addSamplePhotos()">+ Adicionar fotos de exemplo</button>
+      </div>
+      <div class="thumb-row" id="new-thumbs"></div>
+
+      <div style="margin-top:24px; display:flex; justify-content:flex-end; gap:10px;">
+        <button class="btn btn-primary" onclick="createGallery()">Criar galeria</button>
+      </div>
+    </div>
+
+    <div class="section-title">
+      <h2>Galerias</h2>
+      <span class="count-tag" id="gallery-count">0 galerias</span>
+    </div>
+    <div class="gallery-list" id="gallery-list"></div>
+  </div>
+
+  <!-- ================= CLIENT VIEW ================= -->
+  <div id="view-client" style="display:none;">
+    <div class="client-wrap">
+      <div class="client-hero">
+        <span class="eyebrow">Sua galeria está pronta</span>
+        <h1 id="c-title">Marina &amp; Thiago</h1>
+        <div class="meta-line">
+          <span><b id="c-event">—</b></span>
+          <span>Entregue em <b id="c-date">—</b></span>
+          <span><b id="c-count">0</b> fotos</span>
+        </div>
+      </div>
+
+      <div class="sheet-bar">
+        <div class="left">
+          Toque no coração para escolher suas favoritas
+        </div>
+        <div style="display:flex; align-items:center; gap:16px;">
+          <span class="heart-count">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="var(--safelight)" stroke="var(--safelight)" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg>
+            <span id="fav-count">0</span> selecionadas
+          </span>
+          <button class="btn btn-dark btn-sm" id="download-btn" onclick="downloadSelected()" disabled>Baixar selecionadas</button>
+        </div>
+      </div>
+
+      <div class="perf-strip"></div>
+      <div class="contact-grid" id="contact-grid"></div>
+      <div class="perf-strip"></div>
+
+      <div class="contact-footer">Feito com carinho — Revelar © fotografia autoral</div>
+    </div>
+  </div>
+</div>
+
+<div class="lightbox" id="lightbox">
+  <button class="lightbox-close" onclick="closeLightbox()" aria-label="Fechar">✕</button>
+  <button class="lightbox-nav prev" onclick="navLightbox(-1)" aria-label="Anterior">‹</button>
+  <button class="lightbox-nav next" onclick="navLightbox(1)" aria-label="Próxima">›</button>
+  <div class="lightbox-inner">
+    <img id="lightbox-img" src="" alt="">
+    <div class="lightbox-bar">
+      <span id="lightbox-frame">01/24</span>
+      <span>·</span>
+      <button class="frame-heart" id="lightbox-heart" style="position:static;" onclick="toggleFavoriteCurrent()">
+        <svg viewBox="0 0 24 24" stroke="currentColor"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg>
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"><span class="dot"></span><span id="toast-text"></span></div>
+
+<script>
+  const SEEDS = ['maria-1','maria-2','maria-3','maria-4','maria-5','maria-6','maria-7','maria-8'];
+
+  function makePhotos(seedPrefix, n){
+    const photos = [];
+    for(let i=0;i<n;i++){
+      const seed = seedPrefix + '-' + i;
+      photos.push({ id: seed, url: `https://picsum.photos/seed/${seed}/900/600`, favorited: false });
+    }
+    return photos;
+  }
+
+  let galleries = [
+    {
+      id: 'g1',
+      client: 'Marina & Thiago',
+      event: 'Casamento — Sítio das Palmeiras',
+      date: '2026-07-18',
+      status: 'visualizada',
+      photos: makePhotos('mt', 12)
+    }
+  ];
+  let newGalleryPhotos = [];
+  let currentGalleryId = galleries[0].id;
+  let lightboxIndex = 0;
+
+  function fmtDate(iso){
+    if(!iso) return '—';
+    const [y,m,d] = iso.split('-');
+    return `${d}/${m}/${y}`;
+  }
+
+  function setView(v){
+    document.getElementById('view-studio').style.display = v==='studio' ? '' : 'none';
+    document.getElementById('view-client').style.display = v==='client' ? '' : 'none';
+    document.getElementById('tab-studio').classList.toggle('active', v==='studio');
+    document.getElementById('tab-client').classList.toggle('active', v==='client');
+    if(v==='client') renderClient();
+  }
+
+  function showToast(msg){
+    const t = document.getElementById('toast');
+    document.getElementById('toast-text').textContent = msg;
+    t.classList.add('show');
+    clearTimeout(window._toastTimer);
+    window._toastTimer = setTimeout(()=> t.classList.remove('show'), 2600);
+  }
+
+  /* ---------- Studio ---------- */
+  function addSamplePhotos(){
+    const n = newGalleryPhotos.length;
+    const batch = makePhotos('new-'+Date.now(), 6);
+    newGalleryPhotos = newGalleryPhotos.concat(batch);
+    renderNewThumbs();
+  }
+
+  function renderNewThumbs(){
+    const wrap = document.getElementById('new-thumbs');
+    wrap.innerHTML = '';
+    newGalleryPhotos.forEach(p=>{
+      const img = document.createElement('img');
+      img.src = p.url; img.className = 'mini';
+      wrap.appendChild(img);
+    });
+    if(newGalleryPhotos.length === 0){
+      wrap.innerHTML = '<div class="mini-empty">+</div>';
+    }
+  }
+
+  function createGallery(){
+    const client = document.getElementById('in-client').value.trim() || 'Cliente sem nome';
+    const event = document.getElementById('in-event').value.trim() || 'Ensaio fotográfico';
+    const date = document.getElementById('in-date').value || new Date().toISOString().slice(0,10);
+    const photos = newGalleryPhotos.length ? newGalleryPhotos : makePhotos('auto-'+Date.now(), 8);
+
+    const gallery = { id: 'g'+Date.now(), client, event, date, status:'rascunho', photos };
+    galleries.unshift(gallery);
+    newGalleryPhotos = [];
+    document.getElementById('in-client').value='';
+    document.getElementById('in-event').value='';
+    document.getElementById('in-date').value='';
+    document.getElementById('in-total').value='';
+    renderNewThumbs();
+    renderGalleryList();
+    showToast('Galeria criada. Envie o link para o cliente.');
+  }
+
+  function renderGalleryList(){
+    const list = document.getElementById('gallery-list');
+    list.innerHTML = '';
+    document.getElementById('gallery-count').textContent = galleries.length + (galleries.length===1?' galeria':' galerias');
+    galleries.forEach(g=>{
+      const row = document.createElement('div');
+      row.className = 'gallery-row';
+      const statusLabel = g.status==='rascunho'?'Rascunho':g.status==='enviada'?'Enviada':'Visualizada';
+      row.innerHTML = `
+        <div class="gallery-info">
+          <img class="gallery-cover" src="${g.photos[0]?.url||''}" alt="">
+          <div class="gallery-meta">
+            <strong>${g.client}</strong>
+            <span>${g.event} · ${fmtDate(g.date)} · ${g.photos.length} fotos</span>
+          </div>
+        </div>
+        <div class="row-actions">
+          <span class="status-pill status-${g.status}">${statusLabel}</span>
+          <button class="btn btn-ghost btn-sm" onclick="copyLink('${g.id}')">Copiar link</button>
+          <button class="btn btn-primary btn-sm" onclick="openAsClient('${g.id}')">Ver como cliente</button>
+        </div>
+      `;
+      list.appendChild(row);
+    });
+  }
+
+  function copyLink(id){
+    const g = galleries.find(x=>x.id===id);
+    if(g.status==='rascunho') g.status='enviada';
+    renderGalleryList();
+    showToast('Link copiado — revelar.app/g/' + id);
+  }
+
+  function openAsClient(id){
+    currentGalleryId = id;
+    const g = galleries.find(x=>x.id===id);
+    g.status = 'visualizada';
+    renderGalleryList();
+    setView('client');
+  }
+
+  /* ---------- Client ---------- */
+  function currentGallery(){
+    return galleries.find(g=>g.id===currentGalleryId);
+  }
+
+  function renderClient(){
+    const g = currentGallery();
+    if(!g) return;
+    document.getElementById('c-title').textContent = g.client;
+    document.getElementById('c-event').textContent = g.event;
+    document.getElementById('c-date').textContent = fmtDate(g.date);
+    document.getElementById('c-count').textContent = g.photos.length;
+
+    const grid = document.getElementById('contact-grid');
+    grid.innerHTML = '';
+    g.photos.forEach((p, i)=>{
+      const frame = document.createElement('div');
+      frame.className = 'frame';
+      frame.innerHTML = `
+        <img src="${p.url}" alt="Foto ${i+1}" onclick="openLightbox(${i})">
+        <span class="frame-label">${String(i+1).padStart(2,'0')}/${g.photos.length}</span>
+        <button class="frame-heart ${p.favorited?'active':''}" onclick="toggleFavorite(event, ${i})" aria-label="Favoritar">
+          <svg viewBox="0 0 24 24"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg>
+        </button>
+      `;
+      grid.appendChild(frame);
+    });
+    updateFavCount();
+  }
+
+  function toggleFavorite(e, i){
+    e.stopPropagation();
+    const g = currentGallery();
+    g.photos[i].favorited = !g.photos[i].favorited;
+    renderClient();
+  }
+
+  function updateFavCount(){
+    const g = currentGallery();
+    const n = g.photos.filter(p=>p.favorited).length;
+    document.getElementById('fav-count').textContent = n;
+    document.getElementById('download-btn').disabled = n===0;
+  }
+
+  function downloadSelected(){
+    const g = currentGallery();
+    const n = g.photos.filter(p=>p.favorited).length;
+    showToast(`Preparando ${n} ${n===1?'foto':'fotos'} para download…`);
+  }
+
+  /* ---------- Lightbox ---------- */
+  function openLightbox(i){
+    lightboxIndex = i;
+    renderLightbox();
+    document.getElementById('lightbox').classList.add('open');
+  }
+  function closeLightbox(){
+    document.getElementById('lightbox').classList.remove('open');
+  }
+  function navLightbox(dir){
+    const g = currentGallery();
+    lightboxIndex = (lightboxIndex + dir + g.photos.length) % g.photos.length;
+    renderLightbox();
+  }
+  function renderLightbox(){
+    const g = currentGallery();
+    const p = g.photos[lightboxIndex];
+    document.getElementById('lightbox-img').src = p.url;
+    document.getElementById('lightbox-frame').textContent = `${String(lightboxIndex+1).padStart(2,'0')}/${g.photos.length}`;
+    const heart = document.getElementById('lightbox-heart');
+    heart.classList.toggle('active', p.favorited);
+  }
+  function toggleFavoriteCurrent(){
+    const g = currentGallery();
+    g.photos[lightboxIndex].favorited = !g.photos[lightboxIndex].favorited;
+    renderLightbox();
+    renderClient();
+  }
+  document.addEventListener('keydown', (e)=>{
+    if(!document.getElementById('lightbox').classList.contains('open')) return;
+    if(e.key==='Escape') closeLightbox();
+    if(e.key==='ArrowRight') navLightbox(1);
+    if(e.key==='ArrowLeft') navLightbox(-1);
+  });
+
+  /* ---------- init ---------- */
+  renderNewThumbs();
+  renderGalleryList();
+</script>
+</body>
+</html>
